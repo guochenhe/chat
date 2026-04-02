@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+        body{background:#f0f2f5;display:flex;justify-content:center;padding:20px}
+        .chat{width:100%;max-width:500px;background:#fff;border-radius:10px;overflow:hidden}
+        .header{background:#4e98f4;color:#fff;padding:15px;text-align:center}
+        .msg-box{height:600px;padding:15px;overflow-y:auto;background:#f7f8fa}
+        .msg{margin:8px 0;padding:10px 14px;border-radius:15px;max-width:70%}
+        .me{background:#4e98f4;color:#fff;margin-left:auto}
+        .bot{background:#e5e5ea}
+        .input-box{display:flex;padding:10px;border-top:1px solid #eee}
+        input{flex:1;padding:12px;border:1px solid #ddd;border-radius:20px;outline:0}
+        button{margin-left:10px;padding:12px 18px;background:#4e98f4;color:#fff;border:0;border-radius:20px;cursor:pointer}
+    </style>
+</head>
+<body>
+    <div class="chat">
+        <div class="header">Chat</div>
+        <div class="msg-box" id="msgBox"></div>
+        <div class="input-box">
+            <input id="msgInput" placeholder="Type...">
+            <button id="send">Send</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const msgBox = document.getElementById('msgBox');
+        const msgInput = document.getElementById('msgInput');
+        const send = document.getElementById('send');
+
+        function sendMsg(){
+            let t = msgInput.value.trim();
+            if(!t)return;
+            socket.emit('sendMsg',{user:'me',content:t});
+            msgInput.value='';
+        }
+
+        socket.on('newMsg',(m)=>{
+            let d=document.createElement('div');
+            d.className='msg '+(m.user==='me'?'me':'bot');
+            d.innerText=m.content;
+            msgBox.appendChild(d);
+            msgBox.scrollTop=msgBox.scrollHeight;
+        });
+
+        send.onclick=sendMsg;
+        msgInput.addEventListener('keydown',e=>e.key=='Enter'&&sendMsg());
+    </script>
+</body>
+</html>
